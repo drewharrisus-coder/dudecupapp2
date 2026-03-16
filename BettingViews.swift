@@ -5,8 +5,6 @@
 
 import SwiftUI
 
-// MARK: - Shared dark helpers
-
 private func bLabel(_ text: String) -> some View {
     Text(text).font(.system(size: 9, weight: .heavy)).tracking(4)
         .foregroundStyle(Color("DudeCupGreen")).padding(.bottom, 10)
@@ -16,30 +14,24 @@ private func betEmoji(_ type: BetType) -> String {
     switch type { case .tournamentPurse: return "🏆"; case .closestToPin: return "🎯"; case .random9: return "🎲"; case .deuces: return "2️⃣"; case .skins: return "💰" }
 }
 
-// MARK: - Betting Main View
-
 struct BettingView: View {
-    // 1. Keep the old manager for now so we can still get player profiles
     @Environment(TournamentManager.self) private var manager
-    
-    // 2. Inject our shiny new BettingStore!
     @Environment(BettingStore.self) private var bettingStore
-    
     @Environment(AuthManager.self) private var authManager
     
     var currentPlayer: Player? { authManager.currentPlayer }
     
-    // 3. Update references to use bettingStore
     var totalPot: Double {
         bettingStore.bets.reduce(0) { total, bet in
-            let count = Double(bettingStore.betEntries.filter { $0.betId == bet.id && $0.status == .paid }.count)
+            guard let betId = bet.id else { return total }
+            let count = Double(bettingStore.betEntries.filter { $0.betId == betId && $0.status == .paid }.count)
             return total + bet.amount * count
         }
     }
     
     func entryStatus(for bet: Bet) -> BetStatus {
-        guard let player = currentPlayer else { return .notEntered }
-        return bettingStore.betEntries.first(where: { $0.playerId == player.id && $0.betId == bet.id })?.status ?? .notEntered
+        guard let player = currentPlayer, let betId = bet.id else { return .notEntered }
+        return bettingStore.betEntries.first(where: { $0.playerId == player.id.uuidString && $0.betId == betId })?.status ?? .notEntered
     }
     
     var body: some View {
@@ -47,7 +39,7 @@ struct BettingView: View {
             Color.black.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 0) {
-                    bettingHeader
+                    potHero("TOTAL TOURNAMENT POT", totalPot)
                     
                     VStack(alignment: .leading, spacing: 0) {
                         HStack {
@@ -57,7 +49,6 @@ struct BettingView: View {
                         .padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 4)
                         
                         VStack(spacing: 10) {
-                            // 4. Update the loop to use bettingStore
                             ForEach(bettingStore.bets) { bet in
                                 NavigationLink(destination: destinationView(for: bet)) {
                                     BetCardRow(bet: bet, status: entryStatus(for: bet))
@@ -76,21 +67,26 @@ struct BettingView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
     }
     
-    // ... rest of the view remains the same
-    
-    // MARK: - Bet Card Row
+    @ViewBuilder
+    func destinationView(for bet: Bet) -> some View {
+        switch bet.type {
+        case .tournamentPurse: TournamentPurseView(bet: bet)
+        case .closestToPin: ClosestToPinView(bet: bet)
+        case .random9: Random9View(bet: bet)
+        case .deuces: DeucesView(bet: bet)
+        case .skins: SkinsView(bet: bet)
+        }
+    }
     
     struct BetCardRow: View {
         let bet: Bet
         let status: BetStatus
-        
         var statusColor: Color {
             switch status { case .notEntered: return .white.opacity(0.15); case .entered: return .orange; case .paymentPending: return .yellow; case .paid: return Color("DudeCupGreen") }
         }
         var statusLabel: String {
             switch status { case .notEntered: return "ENTER"; case .entered: return "ENTERED"; case .paymentPending: return "PENDING"; case .paid: return "PAID ✓" }
         }
-        
         var body: some View {
             HStack(spacing: 14) {
                 ZStack {
@@ -111,21 +107,19 @@ struct BettingView: View {
                     Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(.white.opacity(0.15))
                 }
             }
-            .padding(14)
-            .background(Color(white: 0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .padding(14).background(Color(white: 0.08)).clipShape(RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(status == .paid ? Color("DudeCupGreen").opacity(0.3) : Color.white.opacity(0.05), lineWidth: 1))
         }
     }
     
-    // MARK: - Tournament Purse
-    
     struct TournamentPurseView: View {
         let bet: Bet
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         
         var totalPot: Double {
-            bet.amount * Double(bettingStore.betEntries.filter { $0.betId == bet.id && $0.status == .paid }.count)
+            guard let betId = bet.id else { return 0 }
+            return bet.amount * Double(bettingStore.betEntries.filter { $0.betId == betId && $0.status == .paid }.count)
         }
         var payouts: [(String, Double)] { [("1ST PLACE", totalPot * 0.5), ("2ND PLACE", totalPot * 0.3), ("3RD PLACE", totalPot * 0.2)] }
         
@@ -140,7 +134,6 @@ struct BettingView: View {
                             Text(bet.description).font(.system(size: 14)).foregroundStyle(.white.opacity(0.55))
                                 .padding(16).background(Color(white: 0.08)).clipShape(RoundedRectangle(cornerRadius: 12))
                                 .padding(.horizontal, 16)
-                            
                             bLabel("PAYOUT STRUCTURE").padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 4)
                             VStack(spacing: 0) {
                                 ForEach(Array(payouts.enumerated()), id: \.offset) { i, p in
@@ -162,13 +155,15 @@ struct BettingView: View {
         }
     }
     
-    // MARK: - Closest to Pin
-    
     struct ClosestToPinView: View {
         let bet: Bet
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         
-        var totalEntries: Int { bettingStore.betEntries.filter { $0.betId == bet.id && $0.status == .paid }.count }
+        var totalEntries: Int {
+            guard let betId = bet.id else { return 0 }
+            return bettingStore.betEntries.filter { $0.betId == betId && $0.status == .paid }.count
+        }
         var potPerContest: Double { 10.0 * Double(totalEntries) }
         
         var body: some View {
@@ -181,7 +176,6 @@ struct BettingView: View {
                             bLabel("ABOUT").padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 4)
                             Text(bet.description).font(.system(size: 14)).foregroundStyle(.white.opacity(0.55))
                                 .padding(16).background(Color(white: 0.08)).clipShape(RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16)
-                            
                             bLabel("CONTESTS").padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 4)
                             VStack(spacing: 8) {
                                 ForEach(bettingStore.ctpContests) { contest in
@@ -206,7 +200,7 @@ struct BettingView: View {
         @Environment(TournamentManager.self) private var manager
         
         var leader: (player: Player, entry: CTPEntry)? {
-            guard let w = contest.winnerEntry, let p = manager.players.first(where: { $0.id == w.playerId }) else { return nil }
+            guard let w = contest.winnerEntry, let p = manager.players.first(where: { $0.id.uuidString == w.playerId }) else { return nil }
             return (p, w)
         }
         
@@ -249,7 +243,7 @@ struct BettingView: View {
         
         var sortedEntries: [(player: Player, entry: CTPEntry)] {
             contest.entries.compactMap { e in
-                guard let p = manager.players.first(where: { $0.id == e.playerId }) else { return nil }
+                guard let p = manager.players.first(where: { $0.id.uuidString == e.playerId }) else { return nil }
                 return (p, e)
             }.sorted { $0.entry.totalInches < $1.entry.totalInches }
         }
@@ -259,7 +253,6 @@ struct BettingView: View {
                 Color.black.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 0) {
-                        // Contest hero
                         ZStack {
                             Color.black
                             RadialGradient(colors: [Color("DudeCupGreen").opacity(0.12), Color.clear], center: .top, startRadius: 0, endRadius: 180)
@@ -271,9 +264,7 @@ struct BettingView: View {
                                     .foregroundStyle(Color("DudeCupGreen")).padding(.bottom, 24)
                             }
                         }
-                        
                         VStack(alignment: .leading, spacing: 0) {
-                            // Leader
                             if let winner = sortedEntries.first {
                                 VStack(alignment: .leading, spacing: 10) {
                                     bLabel("BEAT THIS").padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 4)
@@ -291,8 +282,6 @@ struct BettingView: View {
                                     .padding(.horizontal, 16)
                                 }
                             }
-                            
-                            // Submit button
                             Button { showingSubmission = true } label: {
                                 HStack(spacing: 8) {
                                     Image(systemName: "plus.circle.fill")
@@ -302,7 +291,6 @@ struct BettingView: View {
                                 .background(Color("DudeCupGreen")).clipShape(RoundedRectangle(cornerRadius: 12))
                             }.padding(.horizontal, 16).padding(.top, 20)
                             
-                            // Leaderboard
                             if !sortedEntries.isEmpty {
                                 bLabel("LEADERBOARD").padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 4)
                                 VStack(spacing: 0) {
@@ -333,6 +321,7 @@ struct BettingView: View {
     struct CTPSubmissionView: View {
         let contest: CTPContest
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         @Environment(\.dismiss) private var dismiss
         @State private var selectedPlayer: Player?
         @State private var feet = ""
@@ -389,13 +378,15 @@ struct BettingView: View {
         }
     }
     
-    // MARK: - Random 9
-    
     struct Random9View: View {
         let bet: Bet
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         
-        var totalEntries: Int { bettingStore.betEntries.filter { $0.betId == bet.id && $0.status == .paid }.count }
+        var totalEntries: Int {
+            guard let betId = bet.id else { return 0 }
+            return bettingStore.betEntries.filter { $0.betId == betId && $0.status == .paid }.count
+        }
         var totalPot: Double { bet.amount * Double(totalEntries) }
         
         var sortedHoles: [Random9Hole] {
@@ -478,6 +469,7 @@ struct BettingView: View {
         let player: Player
         let totalScore: Int
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         
         var holeDetails: [(hole: Random9Hole, strokes: Int, par: Int)] {
             guard let sel = bettingStore.random9Selection,
@@ -534,19 +526,20 @@ struct BettingView: View {
             if d == 1  { return Color(red:1,green:0.85,blue:0.3) }
             return Color(red:1,green:0.35,blue:0.35)
         }
-        
         func scoreLabel(_ s: Int, _ par: Int) -> String {
             switch s - par { case ..<(-2): return "ALBATROSS"; case -2: return "EAGLE"; case -1: return "BIRDIE"; case 0: return "PAR"; case 1: return "BOGEY"; case 2: return "DOUBLE"; default: return "+\(s-par)" }
         }
     }
     
-    // MARK: - Deuces
-    
     struct DeucesView: View {
         let bet: Bet
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         
-        var totalEntries: Int { bettingStore.betEntries.filter { $0.betId == bet.id && $0.status == .paid }.count }
+        var totalEntries: Int {
+            guard let betId = bet.id else { return 0 }
+            return bettingStore.betEntries.filter { $0.betId == betId && $0.status == .paid }.count
+        }
         var totalPot: Double { bet.amount * Double(totalEntries) }
         
         var par3Holes: [(round: Int, hole: Int, course: String)] {
@@ -629,18 +622,18 @@ struct BettingView: View {
         }
     }
     
-    // MARK: - Betting Roster
-    
     struct BettingRosterView: View {
         @Environment(TournamentManager.self) private var manager
+        @Environment(BettingStore.self) private var bettingStore
         @Environment(AuthManager.self) private var authManager
         
-        var betIcons: [(id: UUID, icon: String)] {
+        var betIcons: [(id: String?, icon: String)] {
             bettingStore.bets.map { ($0.id, betEmoji($0.type)) }
         }
         
-        func paymentStatus(playerId: UUID, betId: UUID) -> BetStatus {
-            bettingStore.betEntries.first(where: { $0.playerId == playerId && $0.betId == betId })?.status ?? .notEntered
+        func paymentStatus(playerId: UUID, betId: String?) -> BetStatus {
+            guard let betId = betId else { return .notEntered }
+            return bettingStore.betEntries.first(where: { $0.playerId == playerId.uuidString && $0.betId == betId })?.status ?? .notEntered
         }
         
         var totalCollected: Double {
@@ -660,7 +653,6 @@ struct BettingView: View {
                 }.padding(.horizontal, 20).padding(.bottom, 10)
                 
                 VStack(spacing: 0) {
-                    // Header row
                     HStack(spacing: 0) {
                         Text("PLAYER").font(.system(size: 9, weight: .heavy)).tracking(3).foregroundStyle(.white.opacity(0.3))
                             .frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 16)
@@ -709,22 +701,22 @@ struct BettingView: View {
             }
         }
     }
-    
-    // MARK: - Shared pot hero view
-    
-    private func potHero(_ label: String, _ amount: Double, sub: String? = nil, isMoney: Bool = true) -> some View {
-        ZStack {
-            Color.black
-            RadialGradient(colors: [Color("DudeCupGreen").opacity(0.15), Color.clear], center: .top, startRadius: 0, endRadius: 200)
-            VStack(spacing: 4) {
-                Text(label).font(.system(size: 9, weight: .heavy)).tracking(5).foregroundStyle(Color("DudeCupGreen")).padding(.top, 28)
-                Text(isMoney ? "$\(Int(amount))" : "\(Int(amount))")
-                    .font(.system(size: 72, weight: .black)).fontWidth(.compressed).tracking(-2).foregroundStyle(.white)
-                if let sub = sub {
-                    Text(sub.uppercased()).font(.system(size: 9, weight: .heavy)).tracking(3).foregroundStyle(.white.opacity(0.25)).padding(.bottom, 28)
-                } else {
-                    Spacer().frame(height: 28)
-                }
+}
+
+// MARK: - Shared pot hero view
+
+private func potHero(_ label: String, _ amount: Double, sub: String? = nil, isMoney: Bool = true) -> some View {
+    ZStack {
+        Color.black
+        RadialGradient(colors: [Color("DudeCupGreen").opacity(0.15), Color.clear], center: .top, startRadius: 0, endRadius: 200)
+        VStack(spacing: 4) {
+            Text(label).font(.system(size: 9, weight: .heavy)).tracking(5).foregroundStyle(Color("DudeCupGreen")).padding(.top, 28)
+            Text(isMoney ? "$\(Int(amount))" : "\(Int(amount))")
+                .font(.system(size: 72, weight: .black)).fontWidth(.compressed).tracking(-2).foregroundStyle(.white)
+            if let sub = sub {
+                Text(sub.uppercased()).font(.system(size: 9, weight: .heavy)).tracking(3).foregroundStyle(.white.opacity(0.25)).padding(.bottom, 28)
+            } else {
+                Spacer().frame(height: 28)
             }
         }
     }
