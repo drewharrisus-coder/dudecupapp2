@@ -152,141 +152,6 @@ struct TeeSheet: Identifiable, Codable {
     }
 }
 
-// MARK: - Challenge Models
-
-enum ChallengeType: String, Codable, CaseIterable {
-    case lowRound    = "Low Round Score"
-    case mostBirdies = "Most Birdies"
-    case lowHole     = "Low Hole Score"
-    case pickSix     = "Pick Six"
-
-    var description: String {
-        switch self {
-        case .lowRound:    return "Lowest gross score in a round"
-        case .mostBirdies: return "Most birdies in a round"
-        case .lowHole:     return "Lowest score on a specific hole"
-        case .pickSix:     return "Best combined score across 6 chosen holes"
-        }
-    }
-    var icon: String {
-        switch self {
-        case .lowRound:    return "flag.checkered"
-        case .mostBirdies: return "bird.fill"
-        case .lowHole:     return "scope"
-        case .pickSix:     return "list.number"
-        }
-    }
-}
-
-enum ChallengeStatus: String, Codable {
-    case pending          = "pending"
-    case active           = "active"
-    case resolved         = "resolved"
-    case declined         = "declined"
-    case tied             = "tied"
-    case strokesCountered = "strokesCountered"
-}
-
-struct Challenge: Identifiable, Codable {
-    let id: UUID
-    let challengerId: UUID
-    let challengerName: String
-    let challengedId: UUID
-    let challengedName: String
-    let type: ChallengeType
-    let roundNumber: Int
-    let holeNumber: Int?
-    var selectedHoles: [Int] = []
-    let amount: Double
-    let trash: String?
-    var strokesOffered: Int = 0
-    var strokesCountered: Int?
-    var strokesAccepted: Int = 0
-    var status: ChallengeStatus
-    var winnerId: UUID? = nil
-    var winnerName: String? = nil
-    let createdAt: Date
-    var resolvedAt: Date? = nil
-    var strokeSummary: String? = nil
-
-    func loserId(currentPlayerId: UUID) -> UUID? {
-        guard status == .resolved, let wid = winnerId else { return nil }
-        if wid == challengerId { return challengedId }
-        if wid == challengedId { return challengerId }
-        return nil
-    }
-    func loserName() -> String? {
-        guard status == .resolved, let wid = winnerId else { return nil }
-        return wid == challengerId ? challengedName : challengerName
-    }
-    func involves(_ playerId: UUID) -> Bool {
-        challengerId == playerId || challengedId == playerId
-    }
-}
-
-// MARK: - Betting Models
-
-enum BetType: String, Codable {
-    case tournamentPurse = "Tournament Purse"
-    case closestToPin    = "Closest to Pin"
-    case random9         = "Random 9"
-    case deuces          = "Deuces"
-    case skins           = "Skins"
-}
-
-enum BetStatus: String, Codable {
-    case notEntered    = "Not Entered"
-    case entered       = "Entered"
-    case paymentPending = "Payment Pending"
-    case paid          = "Paid"
-}
-
-struct Bet: Identifiable, Codable {
-    let id: UUID
-    let type: BetType
-    let amount: Double
-    let description: String
-    var isOpen: Bool
-}
-
-struct CTPContest: Identifiable, Codable {
-    let id: UUID
-    let round: Int
-    let hole: Int
-    let courseName: String
-    var entries: [CTPEntry]
-    var isClosed: Bool = false
-    var winningEntryId: UUID? = nil
-    var winnerEntry: CTPEntry? { entries.first { $0.id == winningEntryId } }
-}
-
-struct CTPEntry: Identifiable, Codable {
-    let id: UUID
-    let playerId: UUID
-    let feet: Int
-    let inches: Int
-    var totalInches: Int { feet * 12 + inches }
-    var displayDistance: String { "\(feet)' \(inches)\"" }
-}
-
-struct Random9Hole: Codable {
-    let round: Int
-    let hole: Int
-}
-
-struct Random9Selection: Codable {
-    let holes: [Random9Hole]
-    let generatedAt: Date
-}
-
-struct PlayerBetEntry: Identifiable, Codable {
-    let id: UUID
-    let playerId: UUID
-    let betId: UUID
-    var status: BetStatus
-    var paidAt: Date?
-}
-
 // MARK: - Badge System
 
 struct Badge: Identifiable {
@@ -439,30 +304,6 @@ struct TournamentData {
         )
     ]
 
-    let bets: [Bet] = [
-        Bet(id: UUID(uuidString: "BE700000-0000-0000-0000-000000000001")!, type: .tournamentPurse, amount: 100,
-            description: "Main tournament entry fee. Payout based on final leaderboard position.", isOpen: true),
-        Bet(id: UUID(uuidString: "BE700000-0000-0000-0000-000000000002")!, type: .closestToPin, amount: 80,
-            description: "One entry ($80) gets you into all 8 CTP contests. Each contest pot = $10 × number of entries.", isOpen: true),
-        Bet(id: UUID(uuidString: "BE700000-0000-0000-0000-000000000003")!, type: .random9, amount: 25,
-            description: "Best gross score on 9 randomly selected holes across all 4 rounds.", isOpen: true),
-        Bet(id: UUID(uuidString: "BE700000-0000-0000-0000-000000000004")!, type: .deuces, amount: 10,
-            description: "Any player who scores a gross birdie (2) on ANY par 3 hole splits the pot equally.", isOpen: true),
-        Bet(id: UUID(uuidString: "BE700000-0000-0000-0000-000000000005")!, type: .skins, amount: 20,
-            description: "$20 per round. Each round's pot split equally among all entrants who score birdie or better.", isOpen: true)
-    ]
-
-    let ctpContests: [CTPContest] = [
-        CTPContest(id: UUID(), round: 1, hole: 5,  courseName: "Canyon",   entries: []),
-        CTPContest(id: UUID(), round: 1, hole: 13, courseName: "Canyon",   entries: []),
-        CTPContest(id: UUID(), round: 2, hole: 3,  courseName: "Mountain", entries: []),
-        CTPContest(id: UUID(), round: 2, hole: 16, courseName: "Mountain", entries: []),
-        CTPContest(id: UUID(), round: 3, hole: 5,  courseName: "Canyon",   entries: []),
-        CTPContest(id: UUID(), round: 3, hole: 13, courseName: "Canyon",   entries: []),
-        CTPContest(id: UUID(), round: 4, hole: 3,  courseName: "Mountain", entries: []),
-        CTPContest(id: UUID(), round: 4, hole: 16, courseName: "Mountain", entries: [])
-    ]
-
     private func makeRound(roundNumber: Int, avgScore: Int, course: Course) -> RoundScore {
         let variance = [-2, -1, -1, 0, 0, 0, 1, 1, 2]
         let holes = (1...18).map { _ in
@@ -513,10 +354,6 @@ class TournamentManager {
         self.players = TournamentData.shared.players
         self.courses = TournamentData.shared.courses
         self.scores  = TournamentData.shared.scores
-        self.bets    = TournamentData.shared.bets
-        self.ctpContests = TournamentData.shared.ctpContests
-        self.betEntries = []
-        self.random9Selection = nil
         self.schedule = TournamentData.shared.itinerary
         self.announcements = TournamentData.shared.announcements
 
@@ -570,7 +407,6 @@ class TournamentManager {
             Task { @MainActor in
                 if !loadedScores.isEmpty { self.scores = loadedScores }
                 self.calculatePlayerBadges()
-                self.autoResolveChallenges()
                 print("✅ Live updated \(loadedScores.count) scores from Firestore")
             }
         }
@@ -659,7 +495,6 @@ class TournamentManager {
             DispatchQueue.main.async { self.teeSheets = loaded }
         }
         listeners.append(teeSheetListener)
-        
     }
 
     // MARK: - Round Management
@@ -866,259 +701,6 @@ class TournamentManager {
                         firstTeeTime: firstTeeTime, intervalMinutes: intervalMinutes, groups: groups, isPublished: false)
     }
 
-    // MARK: - Skins Calculations
-
-    var skinsEntrants: [Player] {
-    func isEnteredSkins(playerId: UUID, round: Int) -> Bool {
-        guard let skinsBet = bets.first(where: { $0.type == .skins }) else { return false }
-        return betEntries.contains { $0.betId == skinsBet.id && $0.playerId == playerId && $0.status == .paid }
-    }
-
-    func enterSkins(playerId: UUID, round: Int) {
-        guard let skinsBet = bets.first(where: { $0.type == .skins }) else { return }
-        guard !betEntries.contains(where: { $0.betId == skinsBet.id && $0.playerId == playerId }) else { return }
-        let entry = PlayerBetEntry(id: UUID(), playerId: playerId, betId: skinsBet.id, status: .paid, paidAt: Date())
-        betEntries.append(entry)
-        // TODO: persist to Firestore
-    }
-
-        guard let skinsBet = bets.first(where: { $0.type == .skins }) else { return [] }
-        let paidIds = Set(betEntries.filter { $0.betId == skinsBet.id && $0.status == .paid }.map { $0.playerId })
-        return players.filter { paidIds.contains($0.id) }
-    }
-
-    func skinsPot(for round: Int) -> Double {
-        guard let skinsBet = bets.first(where: { $0.type == .skins }) else { return 0 }
-        return skinsBet.amount * Double(skinsEntrants.count)
-    }
-
-    func skinsWinners(for roundNumber: Int) -> [Player] {
-        skinsEntrants.filter { player in
-            guard let score = scores.first(where: { $0.playerId == player.id }),
-                  let round = score.rounds.first(where: { $0.roundNumber == roundNumber }),
-                  round.isAttested,
-                  let course = courses.first(where: { $0.id == round.courseId }) else { return false }
-            return round.holes.enumerated().contains { (idx, hole) in
-                guard hole.strokes > 0 else { return false }
-                let holeNum = idx + 1
-                guard let holeInfo = course.holes.first(where: { $0.number == holeNum }) else { return false }
-                return hole.strokes < holeInfo.par
-            }
-        }
-    }
-
-    func skinsPayoutPerWinner(for roundNumber: Int) -> Double {
-        let winners = skinsWinners(for: roundNumber)
-        guard !winners.isEmpty else { return 0 }
-        return skinsPot(for: roundNumber) / Double(winners.count)
-    }
-
-    func skinsEntrants(for round: Int) -> [Player] {
-        guard let skinsBet = bets.first(where: { $0.type == .skins }) else { return [] }
-        let paidIds = Set(betEntries.filter { $0.betId == skinsBet.id && $0.status == .paid }.map { $0.playerId })
-        return players.filter { paidIds.contains($0.id) }
-    }
-
-    func suggestedStrokes(challengerId: UUID, challengedId: UUID) -> Int {
-        let cHcp = players.first(where: { $0.id == challengerId })?.handicap ?? 0
-        let dHcp = players.first(where: { $0.id == challengedId })?.handicap ?? 0
-        return max(0, dHcp - cHcp)
-    }
-
-    func counterStrokeOffer(id: UUID, strokes: Int) async {
-        guard let idx = challenges.firstIndex(where: { $0.id == id }) else { return }
-        await MainActor.run {
-            challenges[idx].strokesCountered = strokes
-            challenges[idx].status = .strokesCountered
-        }
-        // TODO: persist to Firestore
-    }
-
-    func respondToStrokeCounter(id: UUID, accept: Bool) async {
-        guard let idx = challenges.firstIndex(where: { $0.id == id }) else { return }
-        await MainActor.run {
-            if accept {
-                challenges[idx].status = .active
-            } else {
-                challenges[idx].status = .declined
-            }
-        }
-        // TODO: persist to Firestore
-    }
-
-    func enterBet(playerId: UUID, betId: UUID) {
-        let entry = PlayerBetEntry(id: UUID(), playerId: playerId, betId: betId, status: .entered)
-        betEntries.append(entry)
-        Task {
-            do {
-                try await db.collection("betEntries").document(entry.id.uuidString).setData([
-                    "id": entry.id.uuidString, "playerId": entry.playerId.uuidString,
-                    "betId": entry.betId.uuidString, "status": entry.status.rawValue
-                ])
-                print("✅ Bet entry saved")
-            } catch { print("❌ Bet entry error: \(error)") }
-        }
-    }
-
-    // MARK: - DCPI Calculation
-
-    func calculateDCPI(for playerId: UUID) -> DCPIData? {
-        guard let player = players.first(where: { $0.id == playerId }) else { return nil }
-        var allRounds: [(score: Int, rating: Double, slope: Int, date: Date, year: Int)] = []
-        if let score = scores.first(where: { $0.playerId == playerId }) {
-            for round in score.rounds where round.isComplete {
-                guard let course = courses.first(where: { $0.id == round.courseId }) else { continue }
-                allRounds.append((score: round.totalGross, rating: course.rating, slope: course.slope, date: Date(), year: 2026))
-            }
-        }
-        guard !allRounds.isEmpty else { return nil }
-        var differentials: [(diff: Double, year: Int)] = allRounds.map { round in
-            ((Double(round.score) - round.rating) * (113.0 / Double(round.slope)), round.year)
-        }
-        differentials.sort { $0.diff < $1.diff }
-        let totalRounds = differentials.count
-        let roundsToUse = max(2, min(8, totalRounds / 2))
-        let bestDifferentials = Array(differentials.prefix(roundsToUse))
-        let averageDifferential = bestDifferentials.reduce(0.0) { $0 + $1.diff } / Double(bestDifferentials.count)
-        let dcpi = averageDifferential * 0.96
-        var yearlyDCPI: [(year: Int, dcpi: Double)] = []
-        let groupedByYear = Dictionary(grouping: differentials, by: { $0.year })
-        for (year, yearDiffs) in groupedByYear.sorted(by: { $0.key < $1.key }) {
-            let yearRoundsToUse = max(2, min(8, yearDiffs.count / 2))
-            let yearBest = Array(yearDiffs.sorted { $0.diff < $1.diff }.prefix(yearRoundsToUse))
-            let yearAvg = yearBest.reduce(0.0) { $0 + $1.diff } / Double(yearBest.count)
-            yearlyDCPI.append((year, yearAvg * 0.96))
-        }
-        let trend: String
-        if yearlyDCPI.count >= 2 {
-            let recent = yearlyDCPI.suffix(2)
-            let change = recent.last!.dcpi - recent.first!.dcpi
-            trend = change < -2.0 ? "Improving" : change > 2.0 ? "Declining" : "Steady"
-        } else { trend = "New" }
-        return DCPIData(currentDCPI: dcpi, officialHandicap: player.handicap, trend: trend,
-                        roundsUsed: roundsToUse, totalRounds: totalRounds, yearlyDCPI: yearlyDCPI)
-    }
-
-    // MARK: - CTP Methods
-
-    @MainActor
-    func submitCTPEntry(contestId: UUID, playerId: UUID, feet: Int, inches: Int) async {
-        let entry = CTPEntry(id: UUID(), playerId: playerId, feet: feet, inches: inches)
-        if let contestIndex = ctpContests.firstIndex(where: { $0.id == contestId }) {
-            ctpContests[contestIndex].entries.append(entry)
-            await saveCTPContestToFirestore(ctpContests[contestIndex])
-        }
-    }
-
-    func saveCTPContestToFirestore(_ contest: CTPContest) async {
-        do {
-            let entriesData = contest.entries.map { entry in [
-                "id": entry.id.uuidString, "playerId": entry.playerId.uuidString,
-                "feet": entry.feet, "inches": entry.inches
-            ]}
-            var data: [String: Any] = ["round": contest.round, "hole": contest.hole,
-                "courseName": contest.courseName, "entries": entriesData, "isClosed": contest.isClosed]
-            if let winnerId = contest.winningEntryId { data["winningEntryId"] = winnerId.uuidString }
-            try await db.collection("ctpContests").document(contest.id.uuidString).setData(data)
-            print("✅ CTP contest saved to Firestore")
-        } catch { print("❌ Error saving CTP contest: \(error)") }
-    }
-
-    func adjudicateCTP(contestId: UUID, winningEntryId: UUID?) {
-        guard let index = ctpContests.firstIndex(where: { $0.id == contestId }) else { return }
-        ctpContests[index].isClosed = (winningEntryId != nil)
-        ctpContests[index].winningEntryId = winningEntryId
-        let contest = ctpContests[index]
-        Task { await saveCTPContestToFirestore(contest) }
-    }
-
-    // MARK: - Random 9 Methods
-
-    func generateRandom9() {
-        var allHoles: [(round: Int, hole: Int)] = []
-        for round in 1...4 { for hole in 1...18 { allHoles.append((round: round, hole: hole)) } }
-        let selected = Array(allHoles.shuffled().prefix(9))
-        random9Selection = Random9Selection(holes: selected.map { Random9Hole(round: $0.round, hole: $0.hole) }, generatedAt: Date())
-        Task { await saveRandom9ToFirestore() }
-    }
-
-    func saveRandom9ToFirestore() async {
-        guard let selection = random9Selection else { return }
-        do {
-            try await db.collection("random9").document("current").setData([
-                "holes": selection.holes.map { ["round": $0.round, "hole": $0.hole] },
-                "generatedAt": Timestamp(date: selection.generatedAt)
-            ])
-            print("✅ Random 9 saved to Firestore")
-        } catch { print("❌ Error saving Random 9: \(error)") }
-    }
-
-    func random9Score(for playerId: UUID) -> Int? {
-        guard let selection = random9Selection,
-              let playerScore = scores.first(where: { $0.playerId == playerId }) else { return nil }
-        var totalGross = 0; var holesScored = 0
-        for r9Hole in selection.holes {
-            if let round = playerScore.rounds.first(where: { $0.roundNumber == r9Hole.round }),
-               r9Hole.hole <= round.holes.count {
-                let holeScore = round.holes[r9Hole.hole - 1].strokes
-                if holeScore > 0 { totalGross += holeScore; holesScored += 1 }
-            }
-        }
-        return holesScored > 0 ? totalGross : nil
-    }
-
-    func isRandom9Hole(round: Int, hole: Int) -> Bool {
-        guard let selection = random9Selection else { return false }
-        return selection.holes.contains(where: { $0.round == round && $0.hole == hole })
-    }
-
-    // MARK: - The Banker (Betting)
-
-
-
-    func toggleBetStatus(playerId: UUID, betId: UUID) {
-        let existingEntryIndex = betEntries.firstIndex(where: { $0.playerId == playerId && $0.betId == betId })
-        let entryToSave: PlayerBetEntry
-        if let index = existingEntryIndex {
-            let newStatus: BetStatus = betEntries[index].status == .paid ? .notEntered : .paid
-            betEntries[index].status = newStatus
-            betEntries[index].paidAt = newStatus == .paid ? Date() : nil
-            entryToSave = betEntries[index]
-        } else {
-            entryToSave = PlayerBetEntry(id: UUID(), playerId: playerId, betId: betId, status: .paid, paidAt: Date())
-            betEntries.append(entryToSave)
-        }
-        Task {
-            do {
-                var data: [String: Any] = ["id": entryToSave.id.uuidString, "playerId": entryToSave.playerId.uuidString,
-                    "betId": entryToSave.betId.uuidString, "status": entryToSave.status.rawValue]
-                if let paidAt = entryToSave.paidAt { data["paidAt"] = Timestamp(date: paidAt) }
-                try await db.collection("betEntries").document(entryToSave.id.uuidString).setData(data)
-            } catch { print("❌ Error saving bet entry: \(error)") }
-        }
-    }
-
-    func playerSubmitBets(playerId: UUID, betIds: [UUID]) async {
-        for betId in betIds {
-            if let existingEntry = betEntries.first(where: { $0.playerId == playerId && $0.betId == betId }) {
-                do {
-                    try await db.collection("betEntries").document(existingEntry.id.uuidString).updateData([
-                        "status": BetStatus.paid.rawValue, "paidAt": Timestamp(date: Date())
-                    ])
-                } catch { print("❌ Error updating bet: \(error)") }
-            } else {
-                let entry = PlayerBetEntry(id: UUID(), playerId: playerId, betId: betId, status: .paid, paidAt: Date())
-                do {
-                    try await db.collection("betEntries").document(entry.id.uuidString).setData([
-                        "id": entry.id.uuidString, "playerId": entry.playerId.uuidString,
-                        "betId": entry.betId.uuidString, "status": entry.status.rawValue,
-                        "paidAt": Timestamp(date: entry.paidAt ?? Date())
-                    ])
-                } catch { print("❌ Error saving new bet: \(error)") }
-            }
-        }
-    }
-
     // MARK: - The Megaphone (Announcements)
 
     func pushAnnouncement(title: String, message: String, author: String) {
@@ -1172,144 +754,48 @@ class TournamentManager {
                 if round.holes.contains(where: { $0.strokes == 8 }) { badgeCache[player.id] = "⛄"; hasSnowman = true; break }
             }
             if hasSnowman { continue }
-            if betEntries.filter({ $0.playerId == player.id && $0.status == .paid }).count == 4 { badgeCache[player.id] = "🎰" }
+            // Note: Betting badge logic will be restored when stores are fully connected
         }
         self.playerBadges = badgeCache
     }
 
-    // MARK: - Challenges
+    // MARK: - DCPI Calculation
 
-    func setupChallengesListener() {
-        let listener = db.collection("challenges").addSnapshotListener { [weak self] snapshot, error in
-            guard let self else { return }
-            if let error { print("❌ Challenges listener: \(error)"); return }
-            guard let documents = snapshot?.documents else { return }
-            var loaded: [Challenge] = []
-            for doc in documents {
-                let d = doc.data()
-                guard let cidStr  = d["challengerId"]   as? String, let cid     = UUID(uuidString: cidStr),
-                      let cname   = d["challengerName"] as? String,
-                      let didStr  = d["challengedId"]   as? String, let did     = UUID(uuidString: didStr),
-                      let dname   = d["challengedName"] as? String,
-                      let typeRaw = d["type"]           as? String, let type    = ChallengeType(rawValue: typeRaw),
-                      let round   = d["roundNumber"]    as? Int,
-                      let amount  = d["amount"]         as? Double,
-                      let statRaw = d["status"]         as? String, let status  = ChallengeStatus(rawValue: statRaw),
-                      let tsRaw   = d["createdAt"]      as? Timestamp else { continue }
-                loaded.append(Challenge(
-                    id: UUID(uuidString: doc.documentID) ?? UUID(),
-                    challengerId: cid, challengerName: cname, challengedId: did, challengedName: dname,
-                    type: type, roundNumber: round, holeNumber: d["holeNumber"] as? Int,
-                    selectedHoles: d["selectedHoles"] as? [Int] ?? [],
-                    amount: amount, trash: d["trash"] as? String,
-                    strokesOffered: d["strokesOffered"] as? Int ?? 0,
-                    strokesCountered: d["strokesCountered"] as? Int,
-                    strokesAccepted: d["strokesAccepted"] as? Int ?? 0,
-                    status: status,
-                    winnerId: (d["winnerId"] as? String).flatMap { UUID(uuidString: $0) },
-                    winnerName: d["winnerName"] as? String,
-                    createdAt: tsRaw.dateValue(),
-                    resolvedAt: (d["resolvedAt"] as? Timestamp)?.dateValue()
-                ))
-            }
-            DispatchQueue.main.async { self.challenges = loaded; self.autoResolveChallenges() }
-        }
-        listeners.append(listener)
-    }
-
-    func issueChallenge(_ challenge: Challenge) async {
-        challenges.append(challenge)
-        do {
-            try await db.collection("challenges").document(challenge.id.uuidString).setData(challengeFirestoreData(challenge))
-            print("✅ Challenge issued: \(challenge.challengerName) → \(challenge.challengedName)")
-        } catch { print("❌ Challenge write error: \(error)") }
-    }
-
-    func respondToChallenge(id: UUID, accept: Bool) async {
-        guard let idx = challenges.firstIndex(where: { $0.id == id }) else { return }
-        challenges[idx].status = accept ? .active : .declined
-        do {
-            try await db.collection("challenges").document(id.uuidString).setData(challengeFirestoreData(challenges[idx]))
-        } catch { print("❌ Challenge response error: \(error)") }
-    }
-
-    func autoResolveChallenges() {
-        for (idx, challenge) in challenges.enumerated() {
-            guard challenge.status == .active else { continue }
-            guard let cRound = scores.first(where: { $0.playerId == challenge.challengerId })?.rounds.first(where: { $0.roundNumber == challenge.roundNumber }),
-                  let dRound = scores.first(where: { $0.playerId == challenge.challengedId })?.rounds.first(where: { $0.roundNumber == challenge.roundNumber }),
-                  cRound.isAttested, dRound.isAttested else { continue }
-            let result = resolveResult(challenge: challenge, cRound: cRound, dRound: dRound)
-            challenges[idx].status = result.status
-            challenges[idx].winnerId = result.winnerId
-            challenges[idx].winnerName = result.winnerName
-            challenges[idx].resolvedAt = Date()
-            let updated = challenges[idx]
-            Task {
-                try? await self.db.collection("challenges").document(updated.id.uuidString).setData(self.challengeFirestoreData(updated))
+    func calculateDCPI(for playerId: UUID) -> DCPIData? {
+        guard let player = players.first(where: { $0.id == playerId }) else { return nil }
+        var allRounds: [(score: Int, rating: Double, slope: Int, date: Date, year: Int)] = []
+        if let score = scores.first(where: { $0.playerId == playerId }) {
+            for round in score.rounds where round.isComplete {
+                guard let course = courses.first(where: { $0.id == round.courseId }) else { continue }
+                allRounds.append((score: round.totalGross, rating: course.rating, slope: course.slope, date: Date(), year: 2026))
             }
         }
-    }
-
-    private func resolveResult(challenge: Challenge, cRound: RoundScore, dRound: RoundScore)
-        -> (status: ChallengeStatus, winnerId: UUID?, winnerName: String?) {
-        switch challenge.type {
-        case .lowRound:
-            let cG = cRound.totalGross, dG = dRound.totalGross
-            if cG < dG { return (.resolved, challenge.challengerId, challenge.challengerName) }
-            if dG < cG { return (.resolved, challenge.challengedId, challenge.challengedName) }
-            return (.tied, nil, nil)
-        case .mostBirdies:
-            func birdieCount(_ round: RoundScore) -> Int {
-                guard let course = courses.first(where: { $0.id == round.courseId }) else { return 0 }
-                return round.holes.enumerated().filter { (idx, hole) in
-                    guard hole.strokes > 0 else { return false }
-                    guard let info = course.holes.first(where: { $0.number == idx + 1 }) else { return false }
-                    return hole.strokes < info.par
-                }.count
-            }
-            let cB = birdieCount(cRound), dB = birdieCount(dRound)
-            if cB > dB { return (.resolved, challenge.challengerId, challenge.challengerName) }
-            if dB > cB { return (.resolved, challenge.challengedId, challenge.challengedName) }
-            return (.tied, nil, nil)
-        case .lowHole:
-            guard let holeNum = challenge.holeNumber else { return (.tied, nil, nil) }
-            let holeIdx = holeNum - 1
-            let cS = holeIdx < cRound.holes.count ? cRound.holes[holeIdx].strokes : 0
-            let dS = holeIdx < dRound.holes.count ? dRound.holes[holeIdx].strokes : 0
-            guard cS > 0, dS > 0 else { return (.tied, nil, nil) }
-            if cS < dS { return (.resolved, challenge.challengerId, challenge.challengerName) }
-            if dS < cS { return (.resolved, challenge.challengedId, challenge.challengedName) }
-            return (.tied, nil, nil)
-        case .pickSix:
-            let holes = challenge.selectedHoles
-            let cScore = holes.compactMap { h -> Int? in
-                let idx = h - 1
-                return idx < cRound.holes.count ? cRound.holes[idx].strokes : nil
-            }.reduce(0, +)
-            let dScore = holes.compactMap { h -> Int? in
-                let idx = h - 1
-                return idx < dRound.holes.count ? dRound.holes[idx].strokes : nil
-            }.reduce(0, +)
-            if cScore < dScore { return (.resolved, challenge.challengerId, challenge.challengerName) }
-            if dScore < cScore { return (.resolved, challenge.challengedId, challenge.challengedName) }
-            return (.tied, nil, nil)
+        guard !allRounds.isEmpty else { return nil }
+        var differentials: [(diff: Double, year: Int)] = allRounds.map { round in
+            ((Double(round.score) - round.rating) * (113.0 / Double(round.slope)), round.year)
         }
-    }
-
-    private func challengeFirestoreData(_ c: Challenge) -> [String: Any] {
-        var data: [String: Any] = [
-            "challengerId": c.challengerId.uuidString, "challengerName": c.challengerName,
-            "challengedId": c.challengedId.uuidString, "challengedName": c.challengedName,
-            "type": c.type.rawValue, "roundNumber": c.roundNumber, "amount": c.amount,
-            "status": c.status.rawValue, "createdAt": Timestamp(date: c.createdAt)
-        ]
-        if let h = c.holeNumber  { data["holeNumber"]  = h }
-        if let t = c.trash       { data["trash"]       = t }
-        if let w = c.winnerId    { data["winnerId"]    = w.uuidString }
-        if let wn = c.winnerName { data["winnerName"]  = wn }
-        if let r = c.resolvedAt  { data["resolvedAt"]  = Timestamp(date: r) }
-        return data
+        differentials.sort { $0.diff < $1.diff }
+        let totalRounds = differentials.count
+        let roundsToUse = max(2, min(8, totalRounds / 2))
+        let bestDifferentials = Array(differentials.prefix(roundsToUse))
+        let averageDifferential = bestDifferentials.reduce(0.0) { $0 + $1.diff } / Double(bestDifferentials.count)
+        let dcpi = averageDifferential * 0.96
+        var yearlyDCPI: [(year: Int, dcpi: Double)] = []
+        let groupedByYear = Dictionary(grouping: differentials, by: { $0.year })
+        for (year, yearDiffs) in groupedByYear.sorted(by: { $0.key < $1.key }) {
+            let yearRoundsToUse = max(2, min(8, yearDiffs.count / 2))
+            let yearBest = Array(yearDiffs.sorted { $0.diff < $1.diff }.prefix(yearRoundsToUse))
+            let yearAvg = yearBest.reduce(0.0) { $0 + $1.diff } / Double(yearBest.count)
+            yearlyDCPI.append((year, yearAvg * 0.96))
+        }
+        let trend: String
+        if yearlyDCPI.count >= 2 {
+            let recent = yearlyDCPI.suffix(2)
+            let change = recent.last!.dcpi - recent.first!.dcpi
+            trend = change < -2.0 ? "Improving" : change > 2.0 ? "Declining" : "Steady"
+        } else { trend = "New" }
+        return DCPIData(currentDCPI: dcpi, officialHandicap: player.handicap, trend: trend,
+                        roundsUsed: roundsToUse, totalRounds: totalRounds, yearlyDCPI: yearlyDCPI)
     }
 
     // MARK: - Nuclear Reset
@@ -1327,10 +813,10 @@ class TournamentManager {
         do { try await db.collection("random9").document("current").delete() } catch { print("❌ Failed to clear random9") }
         do { try await db.collection("tournament").document("state").delete() } catch { print("❌ Failed to clear tournament/state") }
         await MainActor.run {
-            self.scores = []; self.ctpContests = []; self.random9Selection = nil
-            self.betEntries = []; self.announcements = []; self.activeRound = 1
+            self.scores = []
+            self.announcements = []; self.activeRound = 1
             self.isTournamentComplete = false; self.playerBadges = [:]
-            self.feedEvents = []; self.teeSheets = []; self.challenges = []
+            self.feedEvents = []; self.teeSheets = []
             print("✅ Local state reset complete")
         }
     }
