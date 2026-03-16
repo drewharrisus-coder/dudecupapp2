@@ -1,5 +1,6 @@
 import Foundation
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 // MARK: - Core Betting Models
 
