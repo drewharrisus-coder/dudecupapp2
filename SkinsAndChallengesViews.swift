@@ -1003,7 +1003,7 @@ struct IssueChallengeSheet: View {
             strokesCountered: nil,
             strokesAccepted: 0,
             status: .pending,
-            createdAt: Date()
+            createdAt: nil
         )
         Task {
             await bettingStore.issueChallenge(challenge)
