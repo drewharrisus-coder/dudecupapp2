@@ -18,7 +18,7 @@ struct PlayerBetEntry: Identifiable, Codable {
     let paidAt: Date?
 }
 
-// MARK: - CTP (Closest to Pin) Models
+// MARK: - CTP Models
 
 struct CTPContest: Identifiable, Codable {
     @DocumentID var id: String?
@@ -28,6 +28,13 @@ struct CTPContest: Identifiable, Codable {
     let entries: [CTPEntry]
     let isClosed: Bool
     let winningEntryId: String?
+    
+    var winnerEntry: CTPEntry? {
+        if let winningId = winningEntryId {
+            return entries.first { $0.id == winningId }
+        }
+        return entries.min(by: { $0.totalInches < $1.totalInches })
+    }
 }
 
 struct CTPEntry: Identifiable, Codable {
@@ -74,9 +81,25 @@ struct Challenge: Identifiable, Codable {
     var resolvedAt: Date?
     var winnerId: String?
     var winnerName: String?
+    
+    func involves(_ pId: UUID) -> Bool {
+        return challengerId == pId.uuidString || challengedId == pId.uuidString
+    }
+    
+    func loserId(currentPlayerId: UUID) -> String? {
+        guard status == .resolved, let winner = winnerId else { return nil }
+        return winner == challengerId ? challengedId : challengerId
+    }
+    
+    var strokeSummary: String? {
+        if strokesAccepted > 0 {
+            return "PLAYING WITH \(strokesAccepted) STROKE\(strokesAccepted == 1 ? "" : "S")"
+        }
+        return "PLAYING STRAIGHT UP"
+    }
 }
 
-// MARK: - Enums (Ensure these are backed by String for Codable)
+// MARK: - Enums
 
 enum BetType: String, Codable, CaseIterable {
     case tournamentPurse = "Tournament Purse"
@@ -94,7 +117,21 @@ enum ChallengeType: String, Codable, CaseIterable {
     case lowRound = "Low Round"
     case lowHole = "Low Hole"
     case pickSix = "Pick 6"
-    // Add other types mapped to your app...
+    
+    var icon: String {
+        switch self {
+        case .lowRound: return "18.circle.fill"
+        case .lowHole: return "flag.circle.fill"
+        case .pickSix: return "6.circle.fill"
+        }
+    }
+    var description: String {
+        switch self {
+        case .lowRound: return "Best net score for 18 holes"
+        case .lowHole: return "Best net score on a specific hole"
+        case .pickSix: return "Best net score on 6 chosen holes"
+        }
+    }
 }
 
 enum ChallengeStatus: String, Codable {
