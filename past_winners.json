@@ -1,0 +1,56 @@
+[
+  {
+    "id": "WINNER-2024",
+    "year": 2024,
+    "winnerName": "Ryan Thompson",
+    "winningScore": 142,
+    "runnerUpName": "Paul Nguyen",
+    "runnerUpScore": 145,
+    "notes": "Ryan dominated with eagles on 15 and 17 in the final round. Epic playoff avoided by clutch birdie on 18."
+  },
+  {
+    "id": "WINNER-2023",
+    "year": 2023,
+    "winnerName": "Scott Garcia",
+    "winningScore": 138,
+    "runnerUpName": "Chris Williams",
+    "runnerUpScore": 140,
+    "notes": "Record-breaking performance. Scotty shot a course record 67 in Round 2. Still talks about it."
+  },
+  {
+    "id": "WINNER-2022",
+    "year": 2022,
+    "winnerName": "Paul Nguyen",
+    "winningScore": 144,
+    "runnerUpName": "Adam Lee",
+    "runnerUpScore": 144,
+    "notes": "Won in sudden death playoff. Made a 25-footer on the third playoff hole. Pure ice."
+  },
+  {
+    "id": "WINNER-2021",
+    "year": 2021,
+    "winnerName": "Mike Anderson",
+    "winningScore": 147,
+    "runnerUpName": "Dan Sullivan",
+    "runnerUpScore": 149,
+    "notes": "Grinded it out in brutal wind conditions. Never gave up, earned the nickname 'The Grinder'."
+  },
+  {
+    "id": "WINNER-2020",
+    "year": 2020,
+    "winnerName": "Chris Williams",
+    "winningScore": 141,
+    "runnerUpName": "Ryan Thompson",
+    "runnerUpScore": 143,
+    "notes": "COVID year tournament. Limited field but 'The Claw' showed up clutch with short game magic."
+  },
+  {
+    "id": "WINNER-2019",
+    "year": 2019,
+    "winnerName": "Adam Lee",
+    "winningScore": 145,
+    "runnerUpName": "Nick Patel",
+    "runnerUpScore": 147,
+    "notes": "First win for 'The Rock'. Steady as they come - no bogeys in the final 9 holes."
+  }
+]

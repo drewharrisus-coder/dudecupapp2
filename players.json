@@ -1,0 +1,218 @@
+[
+  {
+    "id": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+    "name": "Mike Anderson",
+    "nickname": "The Grinder",
+    "handicap": 8,
+    "teamName": "Bogey Brothers",
+    "phoneNumber": "(555) 123-4567",
+    "email": "mike.anderson@email.com"
+  },
+  {
+    "id": "B2C3D4E5-F6G7-8901-BCDE-FG2345678901",
+    "name": "David Chen",
+    "nickname": "Dragonfly",
+    "handicap": 12,
+    "teamName": "Bogey Brothers",
+    "phoneNumber": "(555) 234-5678",
+    "email": "david.chen@email.com"
+  },
+  {
+    "id": "C3D4E5F6-G7H8-9012-CDEF-GH3456789012",
+    "name": "Ryan Thompson",
+    "nickname": "The Bomber",
+    "handicap": 6,
+    "teamName": "Fairway Legends",
+    "phoneNumber": "(555) 345-6789",
+    "email": "ryan.thompson@email.com"
+  },
+  {
+    "id": "D4E5F6G7-H8I9-0123-DEFG-HI4567890123",
+    "name": "Jason Miller",
+    "nickname": "Steady Eddie",
+    "handicap": 15,
+    "teamName": "Fairway Legends",
+    "phoneNumber": "(555) 456-7890",
+    "email": "jason.miller@email.com"
+  },
+  {
+    "id": "E5F6G7H8-I9J0-1234-EFGH-IJ5678901234",
+    "name": "Brian O'Connor",
+    "nickname": "Irish",
+    "handicap": 10,
+    "teamName": "Birdie Bandits",
+    "phoneNumber": "(555) 567-8901",
+    "email": "brian.oconnor@email.com"
+  },
+  {
+    "id": "F6G7H8I9-J0K1-2345-FGHI-JK6789012345",
+    "name": "Tom Rodriguez",
+    "nickname": "T-Rod",
+    "handicap": 9,
+    "teamName": "Birdie Bandits",
+    "phoneNumber": "(555) 678-9012",
+    "email": "tom.rodriguez@email.com"
+  },
+  {
+    "id": "G7H8I9J0-K1L2-3456-GHIJ-KL7890123456",
+    "name": "Kevin Park",
+    "nickname": "K-Park",
+    "handicap": 14,
+    "teamName": "Par Seekers",
+    "phoneNumber": "(555) 789-0123",
+    "email": "kevin.park@email.com"
+  },
+  {
+    "id": "H8I9J0K1-L2M3-4567-HIJK-LM8901234567",
+    "name": "Chris Williams",
+    "nickname": "The Claw",
+    "handicap": 7,
+    "teamName": "Par Seekers",
+    "phoneNumber": "(555) 890-1234",
+    "email": "chris.williams@email.com"
+  },
+  {
+    "id": "I9J0K1L2-M3N4-5678-IJKL-MN9012345678",
+    "name": "Steve Harrison",
+    "nickname": "Ace",
+    "handicap": 11,
+    "teamName": "Duffer Dynasty",
+    "phoneNumber": "(555) 901-2345",
+    "email": "steve.harrison@email.com"
+  },
+  {
+    "id": "J0K1L2M3-N4O5-6789-JKLM-NO0123456789",
+    "name": "Matt Johnson",
+    "nickname": "Matty Ice",
+    "handicap": 13,
+    "teamName": "Duffer Dynasty",
+    "phoneNumber": "(555) 012-3456",
+    "email": "matt.johnson@email.com"
+  },
+  {
+    "id": "K1L2M3N4-O5P6-7890-KLMN-OP1234567890",
+    "name": "Paul Nguyen",
+    "nickname": "The Professor",
+    "handicap": 5,
+    "teamName": "Eagle Eyes",
+    "phoneNumber": "(555) 111-2222",
+    "email": "paul.nguyen@email.com"
+  },
+  {
+    "id": "L2M3N4O5-P6Q7-8901-LMNO-PQ2345678901",
+    "name": "Alex Martinez",
+    "nickname": "A-Mart",
+    "handicap": 16,
+    "teamName": "Eagle Eyes",
+    "phoneNumber": "(555) 222-3333",
+    "email": "alex.martinez@email.com"
+  },
+  {
+    "id": "M3N4O5P6-Q7R8-9012-MNOP-QR3456789012",
+    "name": "Dan Sullivan",
+    "nickname": "Sully",
+    "handicap": 8,
+    "teamName": "Green Jackets",
+    "phoneNumber": "(555) 333-4444",
+    "email": "dan.sullivan@email.com"
+  },
+  {
+    "id": "N4O5P6Q7-R8S9-0123-NOPQ-RS4567890123",
+    "name": "Rob Foster",
+    "nickname": "Fosty",
+    "handicap": 12,
+    "teamName": "Green Jackets",
+    "phoneNumber": "(555) 444-5555",
+    "email": "rob.foster@email.com"
+  },
+  {
+    "id": "O5P6Q7R8-S9T0-1234-OPQR-ST5678901234",
+    "name": "Mark Davis",
+    "nickname": "Big Dog",
+    "handicap": 10,
+    "teamName": "Mulligan Crew",
+    "phoneNumber": "(555) 555-6666",
+    "email": "mark.davis@email.com"
+  },
+  {
+    "id": "P6Q7R8S9-T0U1-2345-PQRS-TU6789012345",
+    "name": "Nick Patel",
+    "nickname": "The Closer",
+    "handicap": 9,
+    "teamName": "Mulligan Crew",
+    "phoneNumber": "(555) 666-7777",
+    "email": "nick.patel@email.com"
+  },
+  {
+    "id": "Q7R8S9T0-U1V2-3456-QRST-UV7890123456",
+    "name": "Eric Thompson",
+    "nickname": "E-Money",
+    "handicap": 14,
+    "teamName": "Slice Squad",
+    "phoneNumber": "(555) 777-8888",
+    "email": "eric.thompson@email.com"
+  },
+  {
+    "id": "R8S9T0U1-V2W3-4567-RSTU-VW8901234567",
+    "name": "Greg Wilson",
+    "nickname": "Wilsy",
+    "handicap": 11,
+    "teamName": "Slice Squad",
+    "phoneNumber": "(555) 888-9999",
+    "email": "greg.wilson@email.com"
+  },
+  {
+    "id": "S9T0U1V2-W3X4-5678-STUV-WX9012345678",
+    "name": "Adam Lee",
+    "nickname": "The Rock",
+    "handicap": 7,
+    "teamName": "Divot Diggers",
+    "phoneNumber": "(555) 999-0000",
+    "email": "adam.lee@email.com"
+  },
+  {
+    "id": "T0U1V2W3-X4Y5-6789-TUVW-XY0123456789",
+    "name": "Josh Brown",
+    "nickname": "JB",
+    "handicap": 15,
+    "teamName": "Divot Diggers",
+    "phoneNumber": "(555) 000-1111",
+    "email": "josh.brown@email.com"
+  },
+  {
+    "id": "U1V2W3X4-Y5Z6-7890-UVWX-YZ1234567890",
+    "name": "Scott Garcia",
+    "nickname": "Scotty Too Hotty",
+    "handicap": 6,
+    "teamName": "Sandbaggers",
+    "phoneNumber": "(555) 121-2121",
+    "email": "scott.garcia@email.com"
+  },
+  {
+    "id": "V2W3X4Y5-Z6A7-8901-VWXY-ZA2345678901",
+    "name": "Tyler Moore",
+    "nickname": "T-Money",
+    "handicap": 13,
+    "teamName": "Sandbaggers",
+    "phoneNumber": "(555) 232-3232",
+    "email": "tyler.moore@email.com"
+  },
+  {
+    "id": "W3X4Y5Z6-A7B8-9012-WXYZ-AB3456789012",
+    "name": "Jake Anderson",
+    "nickname": "The Snake",
+    "handicap": 9,
+    "teamName": "Hook Kings",
+    "phoneNumber": "(555) 343-4343",
+    "email": "jake.anderson@email.com"
+  },
+  {
+    "id": "X4Y5Z6A7-B8C9-0123-XYZA-BC4567890123",
+    "name": "Ben Taylor",
+    "nickname": "Benny",
+    "handicap": 12,
+    "teamName": "Hook Kings",
+    "phoneNumber": "(555) 454-5454",
+    "email": "ben.taylor@email.com"
+  }
+]

@@ -1,0 +1,166 @@
+[
+  {
+    "id": "SCHEDULE-001",
+    "title": "Check-In & Registration",
+    "eventType": "arrival",
+    "day": 1,
+    "startTime": "2025-06-20T14:00:00Z",
+    "endTime": "2025-06-20T16:00:00Z",
+    "location": "Pebble Creek Golf Club - Clubhouse",
+    "description": "Pick up your welcome package, tournament shirts, and player credentials. Meet and greet with fellow competitors.",
+    "isRequired": true
+  },
+  {
+    "id": "SCHEDULE-002",
+    "title": "Practice Round",
+    "eventType": "practice",
+    "day": 1,
+    "startTime": "2025-06-20T16:30:00Z",
+    "endTime": "2025-06-20T20:00:00Z",
+    "location": "Pebble Creek Golf Club - Course",
+    "description": "Optional 18-hole practice round. Get familiar with the course layout and strategy. Tee times assigned upon check-in.",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-003",
+    "title": "Welcome BBQ & Cocktails",
+    "eventType": "meal",
+    "day": 1,
+    "startTime": "2025-06-20T20:30:00Z",
+    "endTime": "2025-06-20T23:00:00Z",
+    "location": "Pebble Creek Golf Club - Patio",
+    "description": "Kick off the tournament with grilled favorites, craft beers, and tournament rules briefing. Dress code: casual.",
+    "isRequired": true
+  },
+  {
+    "id": "SCHEDULE-004",
+    "title": "Tournament Breakfast",
+    "eventType": "meal",
+    "day": 2,
+    "startTime": "2025-06-21T07:00:00Z",
+    "endTime": "2025-06-21T08:30:00Z",
+    "location": "Pebble Creek Golf Club - Dining Room",
+    "description": "Continental breakfast buffet with hot items. Fuel up before Round 1!",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-005",
+    "title": "Round 1 - Shotgun Start",
+    "eventType": "tournament",
+    "day": 2,
+    "startTime": "2025-06-21T09:00:00Z",
+    "endTime": "2025-06-21T14:00:00Z",
+    "location": "Pebble Creek Golf Club - Course",
+    "description": "First competitive round. Format: Individual Stroke Play. Carts provided. Scoring via mobile app.",
+    "isRequired": true
+  },
+  {
+    "id": "SCHEDULE-006",
+    "title": "Lunch on the Turn",
+    "eventType": "meal",
+    "day": 2,
+    "startTime": "2025-06-21T12:00:00Z",
+    "endTime": "2025-06-21T13:00:00Z",
+    "location": "Halfway House - Hole 9",
+    "description": "Grab-and-go sandwiches, snacks, and beverages available at the turn.",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-007",
+    "title": "Afternoon Social Hour",
+    "eventType": "social",
+    "day": 2,
+    "startTime": "2025-06-21T14:30:00Z",
+    "endTime": "2025-06-21T17:00:00Z",
+    "location": "Pebble Creek Golf Club - 19th Hole Bar",
+    "description": "Relax after Round 1. Putting contests, cigar lounge, and card games. Open bar.",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-008",
+    "title": "Team Dinner & Entertainment",
+    "eventType": "meal",
+    "day": 2,
+    "startTime": "2025-06-21T19:00:00Z",
+    "endTime": "2025-06-21T22:30:00Z",
+    "location": "The Steakhouse at Pebble Creek",
+    "description": "Prix fixe dinner with wine pairings. Live acoustic music. Round 1 highlights and side bet payouts.",
+    "isRequired": true
+  },
+  {
+    "id": "SCHEDULE-009",
+    "title": "Late Night Poker Tournament",
+    "eventType": "social",
+    "day": 2,
+    "startTime": "2025-06-21T23:00:00Z",
+    "endTime": "2025-06-22T02:00:00Z",
+    "location": "Clubhouse - Game Room",
+    "description": "$50 buy-in Texas Hold'em. Winner takes all. Optional side action.",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-010",
+    "title": "Coffee & Light Breakfast",
+    "eventType": "meal",
+    "day": 3,
+    "startTime": "2025-06-22T07:30:00Z",
+    "endTime": "2025-06-22T08:45:00Z",
+    "location": "Pebble Creek Golf Club - Terrace",
+    "description": "Quick breakfast with coffee, pastries, and fruit before the final round.",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-011",
+    "title": "Round 2 - Championship Round",
+    "eventType": "tournament",
+    "day": 3,
+    "startTime": "2025-06-22T09:00:00Z",
+    "endTime": "2025-06-22T14:00:00Z",
+    "location": "Pebble Creek Golf Club - Course",
+    "description": "Final competitive round. Leaderboard groups. May the best dude win! Live scoring updates.",
+    "isRequired": true
+  },
+  {
+    "id": "SCHEDULE-012",
+    "title": "Lunch & Score Verification",
+    "eventType": "meal",
+    "day": 3,
+    "startTime": "2025-06-22T14:00:00Z",
+    "endTime": "2025-06-22T15:30:00Z",
+    "location": "Pebble Creek Golf Club - Dining Room",
+    "description": "Post-round lunch buffet while scores are tallied and verified. Share war stories!",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-013",
+    "title": "Awards Ceremony",
+    "eventType": "awards",
+    "day": 3,
+    "startTime": "2025-06-22T16:00:00Z",
+    "endTime": "2025-06-22T17:30:00Z",
+    "location": "Pebble Creek Golf Club - Grand Ballroom",
+    "description": "Trophy presentation for Champion, Runner-Up, and special awards. Don't forget your camera!",
+    "isRequired": true
+  },
+  {
+    "id": "SCHEDULE-014",
+    "title": "Farewell Reception",
+    "eventType": "social",
+    "day": 3,
+    "startTime": "2025-06-22T17:30:00Z",
+    "endTime": "2025-06-22T20:00:00Z",
+    "location": "Pebble Creek Golf Club - Sunset Deck",
+    "description": "Champagne toast, hors d'oeuvres, and highlight reel screening. See you next year at The Dude Cup!",
+    "isRequired": false
+  },
+  {
+    "id": "SCHEDULE-015",
+    "title": "Departure",
+    "eventType": "departure",
+    "day": 3,
+    "startTime": "2025-06-22T20:00:00Z",
+    "location": "Pebble Creek Golf Club",
+    "description": "Safe travels home, dudes. Until next year!",
+    "isRequired": false
+  }
+]
