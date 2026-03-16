@@ -5,8 +5,6 @@
 
 import SwiftUI
 
-// MARK: - Shared label helper
-
 func sLabel(_ text: String) -> some View {
     Text(text)
         .font(.system(size: 9, weight: .heavy)).tracking(4)
@@ -15,11 +13,10 @@ func sLabel(_ text: String) -> some View {
         .padding(.horizontal, 20).padding(.top, 28).padding(.bottom, 10)
 }
 
-// MARK: - Skins View
-
 struct SkinsView: View {
     let bet: Bet
     @Environment(TournamentManager.self) private var manager
+    @Environment(BettingStore.self) private var bettingStore
     @Environment(AuthManager.self) private var authManager
 
     var me: Player? { authManager.currentPlayer }
@@ -70,7 +67,6 @@ struct SkinsView: View {
         VStack(spacing: 0) {
             sLabel("YOUR ENTRY")
             VStack(spacing: 10) {
-                // Summary bar
                 HStack {
                     if enteredRounds.isEmpty {
                         Text("Not entered in any round")
@@ -93,7 +89,6 @@ struct SkinsView: View {
                 }
                 .padding(16).background(Color(white: 0.08)).clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // Quick enter all button (only if not in all rounds)
                 if enteredRounds.count < 4, let me {
                     Button {
                         for r in allRounds where !bettingStore.isEnteredSkins(playerId: me.id, round: r) {
@@ -152,6 +147,7 @@ struct SkinsRoundCard: View {
     let round: Int
     let bet: Bet
     @Environment(TournamentManager.self) private var manager
+    @Environment(BettingStore.self) private var bettingStore
     @Environment(AuthManager.self) private var authManager
 
     var me: Player? { authManager.currentPlayer }
@@ -237,6 +233,7 @@ struct SkinsRoundCard: View {
 
 struct ChallengesView: View {
     @Environment(TournamentManager.self) private var manager
+    @Environment(BettingStore.self) private var bettingStore
     @Environment(AuthManager.self) private var authManager
     @State private var showIssueSheet = false
 
@@ -245,21 +242,21 @@ struct ChallengesView: View {
     var needsMyResponse: [Challenge] {
         guard let me else { return [] }
         return bettingStore.challenges.filter {
-            ($0.challengedId == me.id && $0.status == .pending) ||
-            ($0.challengerId == me.id && $0.status == .strokesCountered)
-        }.sorted { $0.createdAt > $1.createdAt }
+            ($0.challengedId == me.id.uuidString && $0.status == .pending) ||
+            ($0.challengerId == me.id.uuidString && $0.status == .strokesCountered)
+        }.sorted { ($0.createdAt ?? Date()) > ($1.createdAt ?? Date()) }
     }
 
     var activeChallenges: [Challenge] {
         bettingStore.challenges
-            .filter { $0.status == .active || ($0.status == .pending && $0.challengedId != me?.id) }
-            .sorted { $0.createdAt > $1.createdAt }
+            .filter { $0.status == .active || ($0.status == .pending && $0.challengedId != me?.id.uuidString) }
+            .sorted { ($0.createdAt ?? Date()) > ($1.createdAt ?? Date()) }
     }
 
     var resolvedChallenges: [Challenge] {
         bettingStore.challenges
             .filter { $0.status == .resolved || $0.status == .tied || $0.status == .declined }
-            .sorted { ($0.resolvedAt ?? $0.createdAt) > ($1.resolvedAt ?? $1.createdAt) }
+            .sorted { ($0.resolvedAt ?? $0.createdAt ?? Date()) > ($1.resolvedAt ?? $1.createdAt ?? Date()) }
     }
 
     var body: some View {
@@ -281,7 +278,7 @@ struct ChallengesView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
         .sheet(isPresented: $showIssueSheet) {
             IssueChallengeSheet()
-                .environment(manager).environment(authManager)
+                .environment(manager).environment(bettingStore).environment(authManager)
         }
     }
 
@@ -356,7 +353,7 @@ struct ChallengeCard: View {
         case .pending:          return .yellow
         case .strokesCountered: return .orange
         case .active:           return Color("DudeCupGreen")
-        case .resolved:         return challenge.winnerId == me?.id ? Color("DudeCupGreen") : .red
+        case .resolved:         return challenge.winnerId == me?.id.uuidString ? Color("DudeCupGreen") : .red
         case .declined:         return .white.opacity(0.3)
         case .tied:             return .white.opacity(0.5)
         }
@@ -390,7 +387,7 @@ struct ChallengeCard: View {
                         .foregroundStyle(.orange.opacity(0.8))
                 }
                 if challenge.status == .resolved,
-                   let me, challenge.loserId(currentPlayerId: me.id) == me.id {
+                   let me, challenge.loserId(currentPlayerId: me.id) == me.id.uuidString {
                     venmoButton(to: challenge.winnerName ?? "", amount: challenge.amount,
                                 note: "Dude Cup 2026 — \(challenge.type.rawValue) R\(challenge.roundNumber)")
                 }
@@ -472,11 +469,12 @@ struct ChallengeCard: View {
     }
 }
 
-// MARK: - Pending Challenge Card (challenged player accepts/counters/declines)
+// MARK: - Pending Challenge Card
 
 struct PendingChallengeCard: View {
     let challenge: Challenge
     @Environment(TournamentManager.self) private var manager
+    @Environment(BettingStore.self) private var bettingStore
     @State private var showCounter = false
     @State private var counterStrokes: Int = 0
 
@@ -496,13 +494,11 @@ struct PendingChallengeCard: View {
                 Spacer()
             }
 
-            // Holes for Pick 6
             if !challenge.selectedHoles.isEmpty {
                 Text("Holes: \(challenge.selectedHoles.sorted().map(String.init).joined(separator: ", "))")
                     .font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.5))
             }
 
-            // Stroke offer
             if challenge.strokesOffered > 0 {
                 HStack(spacing: 6) {
                     Image(systemName: "gift.fill").font(.system(size: 11)).foregroundStyle(.orange)
@@ -515,12 +511,10 @@ struct PendingChallengeCard: View {
                 Text("\"\(trash)\"").font(.system(size: 12).italic()).foregroundStyle(.white.opacity(0.4))
             }
 
-            // Counter stroke stepper (shown when counter tapped)
             if showCounter {
                 counterStepperView
             }
 
-            // Action buttons
             if !showCounter {
                 HStack(spacing: 8) {
                     Button {
@@ -562,7 +556,6 @@ struct PendingChallengeCard: View {
     var counterStepperView: some View {
         VStack(spacing: 12) {
             Text("REQUEST STROKES").font(.system(size: 9, weight: .heavy)).tracking(3).foregroundStyle(.white.opacity(0.3))
-
             HStack(spacing: 24) {
                 Button { if counterStrokes > 0 { counterStrokes -= 1 } } label: {
                     Image(systemName: "minus.circle.fill").font(.system(size: 32))
@@ -600,11 +593,12 @@ struct PendingChallengeCard: View {
     }
 }
 
-// MARK: - Stroke Counter Card (challenger responds to counter offer)
+// MARK: - Stroke Counter Card
 
 struct StrokeCounterCard: View {
     let challenge: Challenge
     @Environment(TournamentManager.self) private var manager
+    @Environment(BettingStore.self) private var bettingStore
 
     var challengedFirst: String { challenge.challengedName.components(separatedBy: " ").first ?? challenge.challengedName }
 
@@ -667,6 +661,7 @@ struct StrokeCounterCard: View {
 
 struct IssueChallengeSheet: View {
     @Environment(TournamentManager.self) private var manager
+    @Environment(BettingStore.self) private var bettingStore
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dismiss) private var dismiss
 
@@ -728,8 +723,6 @@ struct IssueChallengeSheet: View {
             }
         }
     }
-
-    // ── Sub-views ──────────────────────────────────────────────────────────
 
     var opponentPicker: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -937,8 +930,6 @@ struct IssueChallengeSheet: View {
         .padding(.horizontal, 16).padding(.top, 28).padding(.bottom, 40)
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
-
     func opponentChip(_ player: Player) -> some View {
         let selected = selectedOpponent?.id == player.id
         return Button {
@@ -1000,9 +991,9 @@ struct IssueChallengeSheet: View {
         guard let me, let opponent = selectedOpponent, canSubmit else { return }
         isSubmitting = true
         let challenge = Challenge(
-            id: UUID(),
-            challengerId: me.id, challengerName: me.name,
-            challengedId: opponent.id, challengedName: opponent.name,
+            id: nil, // Firebase generates the ID automatically
+            challengerId: me.id.uuidString, challengerName: me.name,
+            challengedId: opponent.id.uuidString, challengedName: opponent.name,
             type: selectedType, roundNumber: selectedRound,
             holeNumber: selectedType == .lowHole ? selectedHole : nil,
             selectedHoles: selectedType == .pickSix ? selectedHoles.sorted() : [],
